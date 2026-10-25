@@ -13,7 +13,14 @@ import threading
 import tkinter as tk
 from tkinter import messagebox
 
-import hideme_core as core
+if sys.platform == "linux":
+    import hideme_core_linux as core
+    _HIDE_NAME_LABEL = "Hide this computer's name on the network"
+    _DNS_LABEL = "Send DNS through Tor (always on for Linux)"
+else:
+    import hideme_core as core
+    _HIDE_NAME_LABEL = "Hide this Mac's name on the local network"
+    _DNS_LABEL = "Send DNS lookups through Tor too"
 
 BG = "#0f1216"
 CARD = "#191d23"
@@ -26,8 +33,7 @@ RED = "#e5534b"
 AMBER = "#e9a23b"
 FONT = "Helvetica Neue"
 NEWNYM_COOLDOWN_MS = 10_000  # Tor ignores repeat requests within 10 seconds
-OPTIONS = {"hide_name": "Hide this Mac's name on the local network",
-           "protect_dns": "Send DNS lookups through Tor too"}
+OPTIONS = {"hide_name": _HIDE_NAME_LABEL, "protect_dns": _DNS_LABEL}
 
 MODES = {
     # mode: (ring colour, big text, small text, status, status colour, detail)
@@ -351,10 +357,6 @@ def main() -> int:
     parser.add_argument("--restore", action="store_true",
                         help="restore normal network settings and exit")
     args = parser.parse_args()
-    if sys.platform != "darwin":
-        print("Hide Me changes macOS network settings; switching on won't work here.",
-              file=sys.stderr)
-
     hm = core.HideMe()
     if args.restore:
         return restore_only(hm)
